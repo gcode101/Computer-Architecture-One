@@ -41,7 +41,7 @@ function loadMemory() {
     let address = 0;
 
     var lineReader = readline.createInterface({
-      input: fs.createReadStream('mult.ls8')
+      input: fs.createReadStream(process.argv[2])
     });
 
     lineReader.on('line', function (line) {

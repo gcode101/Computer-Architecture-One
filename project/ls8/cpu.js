@@ -6,6 +6,9 @@ const HLT = 0b00000001;
 const LDI = 0b10011001;
 const PRN = 0b01000011;
 const MUL = 0b10101010;
+const POP = 0b01001100;
+const PUSH = 0b01001101;
+let SP = 0xF4;
 /**
  * Class for simulating a simple Computer (CPU & memory)
  */
@@ -103,6 +106,14 @@ class CPU {
                 break;
             case MUL:
                 this.alu('MUL', operandA, operandB)
+                break;
+            case POP:
+                this.reg[operandA] = this.ram.read(SP);
+                SP++;
+                break;
+            case PUSH:
+                SP--;
+                this.ram.write(SP, this.reg[operandA]);
                 break;
             default:
                 console.log("Unknown instruction" + IR.toString(2));
