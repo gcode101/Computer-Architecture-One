@@ -5,6 +5,7 @@
 const HLT = 0b00000001;
 const LDI = 0b10011001;
 const PRN = 0b01000011;
+const MUL = 0b10101010;
 /**
  * Class for simulating a simple Computer (CPU & memory)
  */
@@ -60,7 +61,10 @@ class CPU {
     alu(op, regA, regB) {
         switch (op) {
             case 'MUL':
-                regA = regA * regB;
+                this.reg[regA] = this.reg[regA] * this.reg[regB];
+                break;
+            default:
+                console.log('Unknown OP');
                 break;
         }
     }
@@ -96,6 +100,9 @@ class CPU {
                 break;
             case PRN:
                 console.log(this.reg[operandA]);
+                break;
+            case MUL:
+                this.alu('MUL', operandA, operandB)
                 break;
             default:
                 console.log("Unknown instruction" + IR.toString(2));
