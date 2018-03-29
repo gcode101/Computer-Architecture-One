@@ -45,7 +45,7 @@ function loadMemory() {
     });
 
     lineReader.on('line', function (line) {
-      // console.log('Line from file:', line);
+      console.log('Line from file:', line);
       // let str = line.split('#')[0].slice(0, 8);
       let str = line.split('#')[0].trim();
       let byte = parseInt(str, 2);
@@ -56,6 +56,7 @@ function loadMemory() {
 
     lineReader.on('close', function() {
         cpu.startClock();
+        console.log('****** OUTPUT ******');
     });
 
     // Load the program into the CPU's memory a byte at a time

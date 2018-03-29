@@ -8,7 +8,11 @@ const PRN = 0b01000011;
 const MUL = 0b10101010;
 const POP = 0b01001100;
 const PUSH = 0b01001101;
-let SP = 0xF4;
+const CALL = 0b01001000;
+const ADD = 0b10101000;
+const RET = 0b00001001;
+let called = 0;
+let SP = 7;
 /**
  * Class for simulating a simple Computer (CPU & memory)
  */
@@ -24,6 +28,7 @@ class CPU {
 
         // Special-purpose registers
         this.reg.PC = 0; // Program Counter
+        this.reg[SP] = 0xF4;
     }
 
     /**
@@ -66,10 +71,23 @@ class CPU {
             case 'MUL':
                 this.reg[regA] = this.reg[regA] * this.reg[regB];
                 break;
+            case 'ADD':
+                this.reg[regA] = this.reg[regA] + this.reg[regB];
+                break;
             default:
                 console.log('Unknown OP');
                 break;
         }
+    }
+
+    push(regA) {
+        this.reg[SP]--;
+        this.ram.write(this.reg[SP], this.reg[regA]);
+    }
+
+    pop(regA) {
+        this.reg[regA] = this.ram.read(this.reg[SP]);
+        this.reg[SP]++;
     }
 
     /**
@@ -107,13 +125,29 @@ class CPU {
             case MUL:
                 this.alu('MUL', operandA, operandB)
                 break;
+            case ADD:
+                this.alu('ADD', operandA, operandB)
+                break;
             case POP:
-                this.reg[operandA] = this.ram.read(SP);
-                SP++;
+                this.pop(operandA);
                 break;
             case PUSH:
-                SP--;
-                this.ram.write(SP, this.reg[operandA]);
+                this.push(operandA);
+                break;
+            case CALL:
+                called = 1;
+                if (!operandA) {
+                    this.reg.PC += (IR >>> 6) + 1;
+                } else {
+                    this.reg[SP]--;
+                    this.ram.write(this.reg[SP], this.reg.PC + 2);
+                    this.reg.PC = this.reg[operandA];
+                }
+                break;
+            case RET:
+                called = 1;
+                this.reg.PC = this.ram.read(this.reg[SP]);
+                this.reg[SP]++;
                 break;
             default:
                 console.log("Unknown instruction" + IR.toString(2));
@@ -126,7 +160,11 @@ class CPU {
         // instruction byte tells you how many bytes follow the instruction byte
         // for any particular instruction.
 
-        this.reg.PC += (IR >>> 6) + 1;
+        if (called) {
+            called = 0;
+        } else {
+            this.reg.PC += (IR >>> 6) + 1;
+        }
     }
 }
 
