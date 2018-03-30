@@ -11,6 +11,10 @@ const PUSH = 0b01001101;
 const CALL = 0b01001000;
 const ADD = 0b10101000;
 const RET = 0b00001001;
+const CMP = 0b10100000;
+const JMP = 0b01010000;
+const JEQ = 0b01010001;
+const JNE = 0b01010010;
 let called = 0;
 let SP = 7;
 /**
@@ -29,6 +33,7 @@ class CPU {
         // Special-purpose registers
         this.reg.PC = 0; // Program Counter
         this.reg[SP] = 0xF4;
+        this.flags = {};
     }
 
     /**
@@ -148,6 +153,29 @@ class CPU {
                 called = 1;
                 this.reg.PC = this.ram.read(this.reg[SP]);
                 this.reg[SP]++;
+                break;
+            case CMP:
+                if (this.reg[operandA] === this.reg[operandB]) {
+                    this.flags.E = 1;
+                } else {
+                    this.flags.E = 0;
+                }
+                break;
+            case JMP:
+                called = 1;
+                this.reg.PC = this.reg[operandA];
+                break;
+            case JEQ:
+                if (this.flags.E) {
+                    called = 1;
+                    this.reg.PC = this.reg[operandA];
+                }
+                break;
+            case JNE:
+                if (!this.flags.E) {
+                    called = 1;
+                    this.reg.PC = this.reg[operandA];
+                }
                 break;
             default:
                 console.log("Unknown instruction" + IR.toString(2));
